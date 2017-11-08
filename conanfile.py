@@ -14,16 +14,9 @@ class libjpegConan(ConanFile):
     license = "https://sourceforge.net/projects/libjpeg"
     exports = "CMakeLists.txt", "CMakeListsJPEG.txt"
     url="http://github.com/ZaMaZaN4iK/conan-libjpeg"
-    # requires ="zlib/1.2.8@lasote/stable"
 
     def configure(self):
         del self.settings.compiler.libcxx
-
-    # def remove_crlf(self, filename):
-        # with tools.chdir(self.LIBJPEG_FOLDER_NAME):
-            # self.run("mv ./%s ./%s_win" % (filename, filename))
-            # self.run("tr -d '\015' <./%s_win >./%s" % (filename, filename))
-            # os.unlink("./%s_win" % filename)
 
     def source(self):
         #file name examples:  linux jpegsrc.v9b.tar.gz,  windows jpegsr9b.zip 
