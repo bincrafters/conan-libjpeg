@@ -498,7 +498,7 @@ int main(int argc, char **argv) {
       exit(EXIT_FAILURE);
     }
   } 
-  else if ((infile = fopen("../../../testimg.jpg", READ_BINARY)) == NULL) 
+  else if ((infile = fopen("testimg.jpg", READ_BINARY)) == NULL) 
   {
 /* default input file is stdin */
 #ifdef USE_SETMODE /* need to hack file mode? */

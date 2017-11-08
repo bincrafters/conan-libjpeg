@@ -1,90 +1,70 @@
-import os
-import shutil
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-from conans import ConanFile, CMake, AutoToolsBuildEnvironment
-from conans.client import tools
-from conans.util import files
+import os
+from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
 
 class libjpegConan(ConanFile):
     name = "libjpeg"
-    description = "Libjpeg is a widely used C library for reading and writing JPEG image files. It was developed by Tom Lane and the Independent JPEG Group (IJG) during the 1990's and it is now maintained by several developers using various services identified in the SourceForge summary."
+    description = "Libjpeg is a widely used C library for reading and writing JPEG image files."
     version = "9b"
-    generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
     default_options = "shared=False"
-    license = "GNU General Public License version 2.0 (GPLv2): https://sourceforge.net/projects/libjpeg/"
-    exports = "CMakeLists.txt", "libjpeg/*", "CMakeListsJPEG.txt"
+    license = "https://sourceforge.net/projects/libjpeg"
+    exports = "CMakeLists.txt", "CMakeListsJPEG.txt"
     url="http://github.com/ZaMaZaN4iK/conan-libjpeg"
     # requires ="zlib/1.2.8@lasote/stable"
-
-    LIBJPEG_FOLDER_NAME = "jpeg-%s" % version
-    src_name = "jpegsr%s.zip" % version
-    download_url = "http://ijg.org/files/%s" % src_name
-
-    def requirements(self):
-        pass
-
-    def config_options(self):
-        if self.settings.os == "Windows":
-            self.options.remove("fPIC")
 
     def configure(self):
         del self.settings.compiler.libcxx
 
-    def remove_crlf(self, filename):
-        with tools.chdir(self.LIBJPEG_FOLDER_NAME):
-            self.run("mv ./%s ./%s_win" % (filename, filename))
-            self.run("tr -d '\015' <./%s_win >./%s" % (filename, filename))
-            os.unlink("./%s_win" % filename)
+    # def remove_crlf(self, filename):
+        # with tools.chdir(self.LIBJPEG_FOLDER_NAME):
+            # self.run("mv ./%s ./%s_win" % (filename, filename))
+            # self.run("tr -d '\015' <./%s_win >./%s" % (filename, filename))
+            # os.unlink("./%s_win" % filename)
 
     def source(self):
-        tools.download(self.download_url, self.src_name)
-        tools.unzip(self.src_name)
-        shutil.copy("CMakeListsJPEG.txt", "%s/CMakeLists.txt" % (self.LIBJPEG_FOLDER_NAME))
-        #os.unlink(self.src_name)
-        if self.settings.os != "Windows":
-            # Remove Windows-like line endings (CRLF) from build scripts
-            for filename in ["configure", "aclocal.m4", "configure.ac", "Makefile.am", "config.sub", "ltmain.sh", "Makefile.in", "depcomp", "config.guess", "missing"]:
-                self.remove_crlf(filename)
-            self.run("chmod +x ./%s/configure" % self.LIBJPEG_FOLDER_NAME)
+        #file name examples:  linux jpegsrc.v9b.tar.gz,  windows jpegsr9b.zip 
+        download_url_base = "http://ijg.org/files/"
+        archive_prefix = "jpegsr" if self.settings.os == "Windows" else "jpegsrc.v"
+        archive_ext = ".zip" if self.settings.os == "Windows" else ".tar.gz"
+        download_url =  download_url_base + archive_prefix + self.version + archive_ext
+        self.output.info("trying download of url: " + download_url)
+        tools.get(download_url)
+        os.rename("jpeg-" + self.version, "sources")
+        os.rename("CMakeListsJPEG.txt", os.path.join("sources", "CMakeLists.txt"))
 
     def build(self):
-        with tools.chdir(self.LIBJPEG_FOLDER_NAME):
-            if not tools.OSInfo().is_windows:
-                env_build = AutoToolsBuildEnvironment(self)
-                env_build.fpic = True
-                confArgs = []
-                if self.options.shared:
-                    confArgs.append("--enable-shared=yes --enable-static=no")
-                else:
-                    confArgs.append("--enable-shared=no --enable-static=yes")
-
-
-                env_build.configure("./", args=confArgs, build=False, host=False, target=False)
-                env_build.make()
+        if self.settings.os != "Windows":
+            env_build = AutoToolsBuildEnvironment(self)
+            env_build.fpic = True
+            confArgs = []
+            if self.options.shared:
+                confArgs.append("--enable-shared=yes --enable-static=no")
             else:
-                files.mkdir("_build")
-                with tools.chdir("_build"):
-                    cmake = CMake(self)
-                    cmake.configure(build_dir=".")
-                    cmake.build(build_dir=".")
+                confArgs.append("--enable-shared=no --enable-static=yes")
+
+            env_build.configure("sources", args=confArgs, build=False, host=False, target=False)
+            env_build.make()
+        else:
+            with tools.chdir("sources"):
+                os.rename("jconfig.vc", "jconfig.h")
+            cmake = CMake(self)
+            cmake.configure()
+            cmake.build()
 
     def package(self):
-        """ Define your conan structure: headers, libs, bins and data. After building your
-            project, this method is called to create a defined structure:
-        """
-        # Copying header files
-        self.copy("*.h", "include", "%s" % (self.LIBJPEG_FOLDER_NAME), keep_path=False)
-        self.copy("*.h", "include", "%s" % ("_build"), keep_path=False)
+        self.copy("*.h", dst="include", src="sources")
 
         # Copying static and dynamic libs
         if self.settings.os == "Windows":
-            self.copy(pattern="libjpeg.lib", dst="lib", src="build/lib", keep_path=False)
-            self.copy(pattern="libjpeg.lib", dst="lib", src="build/lib", keep_path=False)
+            lib_dir = os.path.join("sources","Release")
+            self.copy(pattern="libjpeg.lib", dst="lib", src=lib_dir, keep_path=False)
         else:
-            self.copy(pattern="*.so", dst="lib", src="%s/.libs" % self.LIBJPEG_FOLDER_NAME, keep_path=False)
-            self.copy(pattern="*.a", dst="lib", src="%s/.libs" % self.LIBJPEG_FOLDER_NAME, keep_path=False)
+            self.copy(pattern="*.so", dst="lib", src="libs", keep_path=False)
+            self.copy(pattern="*.a", dst="lib", src="libs", keep_path=False)
 
     def package_info(self):
         if self.settings.os == "Windows":
