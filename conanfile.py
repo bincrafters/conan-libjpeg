@@ -12,7 +12,7 @@ class libjpegConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
     license = "https://sourceforge.net/projects/libjpeg"
-    exports = "CMakeLists.txt", "CMakeListsJPEG.txt"
+    exports = "CMakeLists.txt"
     url="http://github.com/ZaMaZaN4iK/conan-libjpeg"
 
     def configure(self):
@@ -27,7 +27,7 @@ class libjpegConan(ConanFile):
         self.output.info("trying download of url: " + download_url)
         tools.get(download_url)
         os.rename("jpeg-" + self.version, "sources")
-        os.rename("CMakeListsJPEG.txt", os.path.join("sources", "CMakeLists.txt"))
+        os.rename("CMakeLists.txt", os.path.join("sources", "CMakeLists.txt"))
 
     def build(self):
         if self.settings.os != "Windows":
@@ -45,7 +45,7 @@ class libjpegConan(ConanFile):
             with tools.chdir("sources"):
                 os.rename("jconfig.vc", "jconfig.h")
             cmake = CMake(self)
-            cmake.configure()
+            cmake.configure(source_dir="sources")
             cmake.build()
 
     def package(self):
@@ -53,8 +53,7 @@ class libjpegConan(ConanFile):
 
         # Copying static and dynamic libs
         if self.settings.os == "Windows":
-            lib_dir = os.path.join("sources","Release")
-            self.copy(pattern="libjpeg.lib", dst="lib", src=lib_dir, keep_path=False)
+            self.copy(pattern="libjpeg.lib", dst="lib", src="Release", keep_path=False)
         else:
             self.copy(pattern="*.so", dst="lib", src="libs", keep_path=False)
             self.copy(pattern="*.a", dst="lib", src="libs", keep_path=False)
