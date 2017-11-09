@@ -13,7 +13,7 @@ class libjpegConan(ConanFile):
     default_options = "shared=False"
     license = "https://sourceforge.net/projects/libjpeg"
     exports = "CMakeLists.txt"
-    url="http://github.com/ZaMaZaN4iK/conan-libjpeg"
+    url="http://github.com/bincrafters/conan-libjpeg"
 
     def configure(self):
         del self.settings.compiler.libcxx
