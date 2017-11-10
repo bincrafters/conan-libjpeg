@@ -1,58 +1,50 @@
-[![Build Status](https://travis-ci.org/bzzzil/conan-libjpeg.svg)](https://travis-ci.org/bzzzil/conan-libjpeg)
+[ ![Download](https://api.bintray.com/packages/bincrafters/public-conan/libjpeg%3Abincrafters/images/download.svg?version=9b%3Astable) ](https://bintray.com/bincrafters/public-conan/libjpeg%3Abincrafters/9b%3Astable/link)
+[![Build Status](https://travis-ci.org/bincrafters/conan-libjpeg.svg?branch=stable%2F9b)](https://travis-ci.org/bincrafters/conan-libjpeg)
+[![Build status](https://ci.appveyor.com/api/projects/status/7ptitwfutasjr1j6?svg=true)](https://ci.appveyor.com/project/BinCrafters/conan-libjpeg)
 
-conan-libjpeg
-=============
+[Conan.io](https://conan.io) package for [libjpeg](https://sourceforge.net/projects/libjpeg) project
 
-[Conan.io](https://conan.io) package for JPEG library
+The packages generated with this **conanfile** can be found in [Bintray](https://bintray.com/bincrafters/public-conan/libjpeg%3Abincrafters).
 
-The packages generated with this **conanfile** can be found in [bintray.com](https://bintray.com/bzzzil/conan/libjpeg:bzzzil/9b:stable).
-
-Build packages
---------------
-
-Download conan client from [Conan.io](https://conan.io) and run:
-
-```
-$ pip install conan_package_tools
-$ python build.py
-```
-
-Upload packages to server
--------------------------
-
-```
-$ conan upload libjpeg/9b@bzzzil/stable --all
-```
-
-Reuse the packages
-------------------
+## For Users: Use this package
 
 ### Basic setup
 
-```
-$ conan install libjpeg/9b@bzzzil/stable
-```
+    $ conan install libjpeg/9b@bincrafters/stable
 
 ### Project setup
 
 If you handle multiple dependencies in your project is better to add a *conanfile.txt*
 
-```
-[requires]
-libjpeg/9b@bzzzil/stable
+    [requires]
+    libjpeg/9b@bincrafters/stable
 
-[options]
-libjpeg:shared=true # false
+    [generators]
+    txt
 
-[generators]
-txt
-cmake
-```
+Complete the installation of requirements for your project running:
 
-Complete the installation of requirements for your project running:</small></span>
+    $ mkdir build && cd build && conan install ..
 
-```
-conan install .
-```
+Note: It is recommended that you run conan install from a build directory and not the root of the project directory.  This is because conan generates *conanbuildinfo* files specific to a single build configuration which by default comes from an autodetected default profile located in ~/.conan/profiles/default .  If you pass different build configuration options to conan install, it will generate different *conanbuildinfo* files.  Thus, they should not be added to the root of the project, nor committed to git.
 
-Project setup installs the library (and all his dependencies) and generates the files *conanbuildinfo.txt* and *conanbuildinfo.cmake* with all the paths and variables that you need to link with your dependencies.
+## For Packagers: Publish this Package
+
+The example below shows the commands used to publish to bincrafters conan repository. To publish to your own conan respository (for example, after forking this git repository), you will need to change the commands below accordingly.
+
+## Build and package
+
+The following command both runs all the steps of the conan file, and publishes the package to the local system cache.  This includes downloading dependencies from "build_requires" and "requires" , and then running the build() method.
+
+    $ conan create bincrafters/stable
+
+## Add Remote
+
+    $ conan remote add bincrafters "https://api.bintray.com/conan/bincrafters/public-conan"
+
+## Upload
+
+    $ conan upload libjpeg/9b@bincrafters/stable --all -r bincrafters
+
+## License
+[LIBJPEG](LICENSE)
