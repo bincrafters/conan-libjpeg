@@ -13,7 +13,8 @@ class libjpegConan(ConanFile):
     default_options = "shared=False"
     license = "https://sourceforge.net/projects/libjpeg"
     exports = "CMakeLists.txt"
-    url="http://github.com/bincrafters/conan-libjpeg"
+    url = "http://github.com/bincrafters/conan-libjpeg"
+    install = "libjpeg-install"
 
     def configure(self):
         del self.settings.compiler.libcxx
@@ -38,9 +39,12 @@ class libjpegConan(ConanFile):
                 confArgs.append("--enable-shared=yes --enable-static=no")
             else:
                 confArgs.append("--enable-shared=no --enable-static=yes")
+            prefix = os.path.abspath(self.install)
+            confArgs.append("--prefix=%s" % prefix)
 
             env_build.configure("sources", args=confArgs, build=False, host=False, target=False)
             env_build.make()
+            env_build.make(args=["install"])
         else:
             with tools.chdir("sources"):
                 os.rename("jconfig.vc", "jconfig.h")
@@ -49,14 +53,14 @@ class libjpegConan(ConanFile):
             cmake.build()
 
     def package(self):
-        self.copy("*.h", dst="include", src="sources")
-
         # Copying static and dynamic libs
         if self.settings.os == "Windows":
             self.copy(pattern="libjpeg.lib", dst="lib", src="Release", keep_path=False)
+            self.copy("*.h", dst="include", src="sources")
         else:
-            self.copy(pattern="*.so", dst="lib", src="libs", keep_path=False)
-            self.copy(pattern="*.a", dst="lib", src="libs", keep_path=False)
+            self.copy("*.h", dst="include", src=os.path.join(self.install, "include"), keep_path=True)
+            self.copy(pattern="*.so", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
+            self.copy(pattern="*.a", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
 
     def package_info(self):
         if self.settings.os == "Windows":

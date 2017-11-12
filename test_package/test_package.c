@@ -12,8 +12,12 @@
  * JPEG markers.
  */
 
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+
 #define JPEG_CJPEG_DJPEG /* to get the command-line config symbols */
-#include "jinclude.h"    /* get auto-config symbols, <stdio.h> */
+#include "jpeglib.h"    /* get auto-config symbols, <stdio.h> */
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h> /* Bill Allombert: use locale for isprint */
@@ -453,7 +457,7 @@ static int keymatch(char *arg, const char *keyword, int minchars)
 int main(int argc, char **argv) {
   int argn;
   char *arg;
-  int verbose = 0, raw = 0;
+  int verbose = 1, raw = 0;
 
 /* On Mac, fetch a command line. */
 #ifdef USE_CCOMMAND
