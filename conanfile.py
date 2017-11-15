@@ -30,7 +30,7 @@ class libjpegConan(ConanFile):
         self.output.info("trying download of url: " + download_url)
         tools.get(download_url)
         os.rename("jpeg-" + self.version, "sources")
-        shutil.copy('Win32.mak', os.path.join('sources', 'Win32.mak'))
+        shutil.copy('Win32.Mak', os.path.join('sources', 'Win32.Mak'))
         shutil.copy(os.path.join('sources', 'jconfig.vc'), os.path.join('sources', 'jconfig.h'))
 
     def build_windows(self):
