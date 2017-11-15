@@ -16,7 +16,7 @@ class libjpegConan(ConanFile):
     license = "https://sourceforge.net/projects/libjpeg"
     url = "http://github.com/bincrafters/conan-libjpeg"
     install = "libjpeg-install"
-    exports_sources = ['Win32.mak']
+    exports_sources = ['Win32.Mak']
 
     def configure(self):
         del self.settings.compiler.libcxx
