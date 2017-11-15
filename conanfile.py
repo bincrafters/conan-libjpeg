@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools
+import shutil
+from conans import ConanFile, AutoToolsBuildEnvironment, tools
+
 
 class libjpegConan(ConanFile):
     name = "libjpeg"
@@ -12,51 +14,56 @@ class libjpegConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
     license = "https://sourceforge.net/projects/libjpeg"
-    exports = "CMakeLists.txt"
     url = "http://github.com/bincrafters/conan-libjpeg"
     install = "libjpeg-install"
+    exports_sources = ['win32.mak']
 
     def configure(self):
         del self.settings.compiler.libcxx
 
     def source(self):
-        #file name examples:  linux jpegsrc.v9b.tar.gz,  windows jpegsr9b.zip 
+        # file name examples:  linux jpegsrc.v9b.tar.gz,  windows jpegsr9b.zip
         download_url_base = "http://ijg.org/files/"
         archive_prefix = "jpegsr" if self.settings.os == "Windows" else "jpegsrc.v"
         archive_ext = ".zip" if self.settings.os == "Windows" else ".tar.gz"
-        download_url =  download_url_base + archive_prefix + self.version + archive_ext
+        download_url = download_url_base + archive_prefix + self.version + archive_ext
         self.output.info("trying download of url: " + download_url)
         tools.get(download_url)
         os.rename("jpeg-" + self.version, "sources")
-        os.rename("CMakeLists.txt", os.path.join("sources", "CMakeLists.txt"))
+        shutil.copy('win32.mak', os.path.join('sources', 'win32.mak'))
+        shutil.copy(os.path.join('sources', 'jconfig.vc'), os.path.join('sources', 'jconfig.h'))
+
+    def build_windows(self):
+        with tools.chdir("sources"):
+            vcvars_command = tools.vcvars_command(self.settings)
+            self.run('%s && nmake -f makefile.vc' % vcvars_command)
+
+    def build_configure(self):
+        env_build = AutoToolsBuildEnvironment(self)
+        env_build.fpic = True
+        config_args = []
+        if self.options.shared:
+            config_args.append("--enable-shared=yes --enable-static=no")
+        else:
+            config_args.append("--enable-shared=no --enable-static=yes")
+        prefix = os.path.abspath(self.install)
+        config_args.append("--prefix=%s" % prefix)
+
+        env_build.configure("sources", args=config_args, build=False, host=False, target=False)
+        env_build.make()
+        env_build.make(args=["install"])
 
     def build(self):
         if self.settings.os != "Windows":
-            env_build = AutoToolsBuildEnvironment(self)
-            env_build.fpic = True
-            confArgs = []
-            if self.options.shared:
-                confArgs.append("--enable-shared=yes --enable-static=no")
-            else:
-                confArgs.append("--enable-shared=no --enable-static=yes")
-            prefix = os.path.abspath(self.install)
-            confArgs.append("--prefix=%s" % prefix)
-
-            env_build.configure("sources", args=confArgs, build=False, host=False, target=False)
-            env_build.make()
-            env_build.make(args=["install"])
+            self.build_configure()
         else:
-            with tools.chdir("sources"):
-                os.rename("jconfig.vc", "jconfig.h")
-            cmake = CMake(self)
-            cmake.configure(source_dir="sources")
-            cmake.build()
+            self.build_windows()
 
     def package(self):
-        # Copying static and dynamic libs
         if self.settings.os == "Windows":
-            self.copy(pattern="libjpeg.lib", dst="lib", src="Release", keep_path=False)
-            self.copy("*.h", dst="include", src="sources")
+            self.copy(pattern="libjpeg.lib", dst="lib", src="sources", keep_path=False)
+            for filename in ['jpeglib.h', ' jerror.h', 'jconfig.h', 'jmorecfg.h']:
+                self.copy(pattern=filename, dst="include", src="sources")
         else:
             self.copy("*.h", dst="include", src=os.path.join(self.install, "include"), keep_path=True)
             self.copy(pattern="*.so", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
@@ -64,12 +71,6 @@ class libjpegConan(ConanFile):
 
     def package_info(self):
         if self.settings.os == "Windows":
-            if self.settings.build_type == "Debug":
-                self.cpp_info.libs = ['libjpegd']
-            else:
-                self.cpp_info.libs = ['libjpeg']
+            self.cpp_info.libs = ['libjpegd' if self.settings.build_type == "Debug" else "libjpeg"]
         else:
-            if self.settings.build_type == "Debug":
-                self.cpp_info.libs = ['jpeg']
-            else:
-                self.cpp_info.libs = ['jpeg']
+            self.cpp_info.libs = ['jpeg']
