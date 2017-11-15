@@ -71,6 +71,6 @@ class libjpegConan(ConanFile):
 
     def package_info(self):
         if self.settings.os == "Windows":
-            self.cpp_info.libs = ['libjpegd' if self.settings.build_type == "Debug" else "libjpeg"]
+            self.cpp_info.libs = ['libjpeg']
         else:
             self.cpp_info.libs = ['jpeg']
