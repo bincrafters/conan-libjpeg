@@ -16,7 +16,7 @@ class libjpegConan(ConanFile):
     license = "https://sourceforge.net/projects/libjpeg"
     url = "http://github.com/bincrafters/conan-libjpeg"
     install = "libjpeg-install"
-    exports_sources = ['win32.mak']
+    exports_sources = ['Win32.mak']
 
     def configure(self):
         del self.settings.compiler.libcxx
@@ -30,7 +30,7 @@ class libjpegConan(ConanFile):
         self.output.info("trying download of url: " + download_url)
         tools.get(download_url)
         os.rename("jpeg-" + self.version, "sources")
-        shutil.copy('win32.mak', os.path.join('sources', 'win32.mak'))
+        shutil.copy('Win32.mak', os.path.join('sources', 'Win32.mak'))
         shutil.copy(os.path.join('sources', 'jconfig.vc'), os.path.join('sources', 'jconfig.h'))
 
     def build_windows(self):
