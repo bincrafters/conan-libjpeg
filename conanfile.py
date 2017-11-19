@@ -30,10 +30,11 @@ class libjpegConan(ConanFile):
         self.output.info("trying download of url: " + download_url)
         tools.get(download_url)
         os.rename("jpeg-" + self.version, "sources")
-        shutil.copy('Win32.Mak', os.path.join('sources', 'Win32.Mak'))
-        shutil.copy(os.path.join('sources', 'jconfig.vc'), os.path.join('sources', 'jconfig.h'))
+        if self.settings.compiler == 'Visual Studio':
+            shutil.copy('Win32.Mak', os.path.join('sources', 'Win32.Mak'))
+            shutil.copy(os.path.join('sources', 'jconfig.vc'), os.path.join('sources', 'jconfig.h'))
 
-    def build_windows(self):
+    def build_nmake(self):
         with tools.chdir("sources"):
             vcvars_command = tools.vcvars_command(self.settings)
             self.run('%s && nmake -f makefile.vc' % vcvars_command)
@@ -54,13 +55,13 @@ class libjpegConan(ConanFile):
         env_build.make(args=["install"])
 
     def build(self):
-        if self.settings.os != "Windows":
-            self.build_configure()
+        if self.settings.compiler == "Visual Studio":
+            self.build_nmake()
         else:
-            self.build_windows()
+            self.build_configure()
 
     def package(self):
-        if self.settings.os == "Windows":
+        if self.settings.compiler == "Visual Studio":
             self.copy(pattern="libjpeg.lib", dst="lib", src="sources", keep_path=False)
             for filename in ['jpeglib.h', ' jerror.h', 'jconfig.h', 'jmorecfg.h']:
                 self.copy(pattern=filename, dst="include", src="sources")
@@ -70,7 +71,7 @@ class libjpegConan(ConanFile):
             self.copy(pattern="*.a", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
 
     def package_info(self):
-        if self.settings.os == "Windows":
+        if self.settings.compiler == "Visual Studio":
             self.cpp_info.libs = ['libjpeg']
         else:
             self.cpp_info.libs = ['jpeg']
