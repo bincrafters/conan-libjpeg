@@ -8,15 +8,16 @@ from conans import ConanFile, AutoToolsBuildEnvironment, tools
 
 class libjpegConan(ConanFile):
     name = "libjpeg"
-    description = "Libjpeg is a widely used C library for reading and writing JPEG image files."
     version = "9b"
+    description = "Libjpeg is a widely used C library for reading and writing JPEG image files."
+    url = "http://github.com/bincrafters/conan-libjpeg"
+    license = "BSD"
+    exports = ["LICENSE.md"]
+    exports_sources = ['Win32.Mak']
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
     default_options = "shared=False"
-    license = "https://sourceforge.net/projects/libjpeg"
-    url = "http://github.com/bincrafters/conan-libjpeg"
     install = "libjpeg-install"
-    exports_sources = ['Win32.Mak']
 
     def configure(self):
         del self.settings.compiler.libcxx
