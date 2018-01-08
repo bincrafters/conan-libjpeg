@@ -45,9 +45,9 @@ class libjpegConan(ConanFile):
         env_build.fpic = True
         config_args = []
         if self.options.shared:
-            config_args.append("--enable-shared=yes --enable-static=no")
+            config_args.extend(["--enable-shared=yes", "--enable-static=no"])
         else:
-            config_args.append("--enable-shared=no --enable-static=yes")
+            config_args.extend(["--enable-shared=no", "--enable-static=yes"])
         prefix = os.path.abspath(self.install)
         config_args.append("--prefix=%s" % prefix)
 
