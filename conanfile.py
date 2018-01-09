@@ -47,7 +47,7 @@ class libjpegConan(ConanFile):
 
     def build_configure(self):
         # works for unix and mingw environments
-        env_build = AutoToolsBuildEnvironment(self, win_bash=self.os.settings == 'Windows')
+        env_build = AutoToolsBuildEnvironment(self, win_bash=self.settings.os == 'Windows')
         env_build.fpic = True
         config_args = []
         if self.options.shared:
