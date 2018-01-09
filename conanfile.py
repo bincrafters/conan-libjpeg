@@ -23,10 +23,9 @@ class libjpegConan(ConanFile):
         del self.settings.compiler.libcxx
 
     def build_requirements(self):
-        if self.settings.os == "Windows":
+        if self.settings.os == "Windows" and self.settings.compiler != "Visual Studio":
             self.build_requires("msys2_installer/latest@bincrafters/stable")
-            if self.settings.compiler != "Visual Studio":
-                self.build_requires("mingw_installer/1.0@conan/stable")
+            self.build_requires("mingw_installer/1.0@conan/stable")
 
     def source(self):
         # file name examples:  linux jpegsrc.v9b.tar.gz,  windows jpegsr9b.zip
@@ -79,9 +78,9 @@ class libjpegConan(ConanFile):
             config_args.append('--build=i686-w64-mingw32')
             config_args.append('--host=i686-w64-mingw32')
 
-        env_build.configure(configure_dir="sources", args=config_args, build=False, host=False, target=False)
-        env_build.make()
-        env_build.make(args=["install"])
+        tools.run_in_windows_bash(self, "./sources/configure " + " ".join(config_args))
+        tools.run_in_windows_bash(self, "make")
+        tools.run_in_windows_bash(self, "make install")
 
     def build(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
