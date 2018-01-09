@@ -97,7 +97,8 @@ class libjpegConan(ConanFile):
                 self.copy(pattern=filename, dst="include", src="sources")
         else:
             self.copy("*.h", dst="include", src=os.path.join(self.install, "include"), keep_path=True)
-            self.copy(pattern="*.so", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
+            self.copy(pattern="*.so*", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
+            self.copy(pattern="*.dylib*", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
             self.copy(pattern="*.a", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
 
     def package_info(self):
