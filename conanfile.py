@@ -74,10 +74,10 @@ class libjpegConan(ConanFile):
 
         # mingw-specific
         if self.settings.arch == "x86_64":
-            configure_args.append('--host=x86_64-w64-mingw32')
+            config_args.append('--host=x86_64-w64-mingw32')
         if self.settings.arch == "x86":
-            configure_args.append('--build=i686-w64-mingw32')
-            configure_args.append('--host=i686-w64-mingw32')
+            config_args.append('--build=i686-w64-mingw32')
+            config_args.append('--host=i686-w64-mingw32')
 
         env_build.configure(configure_dir="sources", args=config_args, build=False, host=False, target=False)
         env_build.make()
