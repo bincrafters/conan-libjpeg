@@ -22,6 +22,12 @@ class libjpegConan(ConanFile):
     def configure(self):
         del self.settings.compiler.libcxx
 
+    def build_requirements(self):
+        if self.settings.os == "Windows":
+            self.build_requires("msys2_installer/latest@bincrafters/stable")
+            if self.settings.compiler != "Visual Studio":
+                self.build_requires("mingw_installer/1.0@conan/stable")
+
     def source(self):
         # file name examples:  linux jpegsrc.v9b.tar.gz,  windows jpegsr9b.zip
         download_url_base = "http://ijg.org/files/"
@@ -51,13 +57,37 @@ class libjpegConan(ConanFile):
         prefix = os.path.abspath(self.install)
         config_args.append("--prefix=%s" % prefix)
 
-        env_build.configure("sources", args=config_args, build=False, host=False, target=False)
+        env_build.configure(configure_dir="sources", args=config_args, build=False, host=False, target=False)
+        env_build.make()
+        env_build.make(args=["install"])
+
+    def build_mingw(self):
+        env_build = AutoToolsBuildEnvironment(self)
+        env_build.fpic = True
+        config_args = []
+        if self.options.shared:
+            config_args.extend(["--enable-shared=yes", "--enable-static=no"])
+        else:
+            config_args.extend(["--enable-shared=no", "--enable-static=yes"])
+        prefix = os.path.abspath(self.install)
+        config_args.append("--prefix=%s" % prefix)
+
+        # mingw-specific
+        if self.settings.arch == "x86_64":
+            configure_args.append('--host=x86_64-w64-mingw32')
+        if self.settings.arch == "x86":
+            configure_args.append('--build=i686-w64-mingw32')
+            configure_args.append('--host=i686-w64-mingw32')
+
+        env_build.configure(configure_dir="sources", args=config_args, build=False, host=False, target=False)
         env_build.make()
         env_build.make(args=["install"])
 
     def build(self):
-        if self.settings.compiler == "Visual Studio":
+        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             self.build_nmake()
+        elif self.settings.os == "Windows" and self.settings.compiler == "gcc":
+            self.build_mingw()
         else:
             self.build_configure()
 
