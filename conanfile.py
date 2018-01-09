@@ -46,7 +46,8 @@ class libjpegConan(ConanFile):
             self.run('%s && nmake -f makefile.vc' % vcvars_command)
 
     def build_configure(self):
-        env_build = AutoToolsBuildEnvironment(self)
+        # works for unix and mingw environments
+        env_build = AutoToolsBuildEnvironment(self, win_bash=True)
         env_build.fpic = True
         config_args = []
         if self.options.shared:
@@ -54,39 +55,25 @@ class libjpegConan(ConanFile):
         else:
             config_args.extend(["--enable-shared=no", "--enable-static=yes"])
         prefix = os.path.abspath(self.install)
+        if self.settings.os == 'Windows':
+            prefix = tools.unix_path(prefix)
         config_args.append("--prefix=%s" % prefix)
+
+        # mingw-specific
+        if self.settings.os == 'Windows':
+            if self.settings.arch == "x86_64":
+                config_args.append('--host=x86_64-w64-mingw32')
+            if self.settings.arch == "x86":
+                config_args.append('--build=i686-w64-mingw32')
+                config_args.append('--host=i686-w64-mingw32')
 
         env_build.configure(configure_dir="sources", args=config_args, build=False, host=False, target=False)
         env_build.make()
         env_build.make(args=["install"])
 
-    def build_mingw(self):
-        env_build = AutoToolsBuildEnvironment(self)
-        env_build.fpic = True
-        config_args = []
-        if self.options.shared:
-            config_args.extend(["--enable-shared=yes", "--enable-static=no"])
-        else:
-            config_args.extend(["--enable-shared=no", "--enable-static=yes"])
-        prefix = os.path.abspath(self.install)
-        config_args.append("--prefix=%s" % tools.unix_path(prefix))
-
-        # mingw-specific
-        if self.settings.arch == "x86_64":
-            config_args.append('--host=x86_64-w64-mingw32')
-        if self.settings.arch == "x86":
-            config_args.append('--build=i686-w64-mingw32')
-            config_args.append('--host=i686-w64-mingw32')
-
-        tools.run_in_windows_bash(self, "./sources/configure " + " ".join(config_args))
-        tools.run_in_windows_bash(self, "make")
-        tools.run_in_windows_bash(self, "make install")
-
     def build(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             self.build_nmake()
-        elif self.settings.os == "Windows" and self.settings.compiler == "gcc":
-            self.build_mingw()
         else:
             self.build_configure()
 
