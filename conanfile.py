@@ -69,7 +69,7 @@ class libjpegConan(ConanFile):
         else:
             config_args.extend(["--enable-shared=no", "--enable-static=yes"])
         prefix = os.path.abspath(self.install)
-        config_args.append("--prefix=%s" % prefix)
+        config_args.append("--prefix=%s" % tools.unix_path(prefix))
 
         # mingw-specific
         if self.settings.arch == "x86_64":
