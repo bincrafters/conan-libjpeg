@@ -93,7 +93,4 @@ class libjpegConan(ConanFile):
         if self.settings.compiler == "Visual Studio":
             self.cpp_info.libs = ['libjpeg']
         else:
-            if self.settings.os == 'Windows' and self.options.shared:
-                self.cpp_info.libs = ['jpeg-9']
-            else:
-                self.cpp_info.libs = ['jpeg']
+            self.cpp_info.libs = ['jpeg']
