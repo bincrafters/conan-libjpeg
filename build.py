@@ -90,4 +90,12 @@ if __name__ == "__main__":
         stable_branch_pattern="stable/*")
 
     builder.add_common_builds(shared_option_name=name + ":shared")
+
+    builds = []
+    for settings, options, env_vars, build_requires in builder.builds:
+        # skip mingw cross-builds
+        if not (platform.system() == "Windows" and settings["compiler"] == "gcc" and settings["arch"] == "x86"):
+            builds.append([settings, options, env_vars, build_requires])
+    builder.builds = builds
+
     builder.run()
