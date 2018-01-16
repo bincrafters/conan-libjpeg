@@ -87,9 +87,13 @@ class libjpegConan(ConanFile):
             self.copy(pattern="*.so*", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
             self.copy(pattern="*.dylib*", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
             self.copy(pattern="*.a", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
+            self.copy(pattern="*.dll", dst="bin", src=os.path.join(self.install, "bin"), keep_path=False)
 
     def package_info(self):
         if self.settings.compiler == "Visual Studio":
-            self.cpp_info.libs = ['libjpeg']
+            if self.options.shared:
+                self.cpp_info.libs = ['jpeg-9']
+            else:
+                self.cpp_info.libs = ['libjpeg']
         else:
             self.cpp_info.libs = ['jpeg']
