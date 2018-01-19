@@ -77,6 +77,7 @@ class libjpegConan(ConanFile):
             self.build_configure()
 
     def package(self):
+        self.copy("README", src=self.source_subfolder, dst="licenses", ignore_case=True, keep_path=False)
         if self.settings.compiler == "Visual Studio":
             self.copy(pattern="libjpeg.lib", dst="lib", src=self.source_subfolder, keep_path=False)
             for filename in ['jpeglib.h', ' jerror.h', 'jconfig.h', 'jmorecfg.h']:
