@@ -42,7 +42,7 @@ class libjpegConan(ConanFile):
             self.run('%s && nmake -f makefile.vc setup-v10' % vcvars_command)
             # sometimes upgrading from 2010 to 2012 project fails with non-error exit code
             try:
-                self.run('%s && devenv jpeg.sln /upgrade' % (vcvars_command, cmd))
+                self.run('%s && devenv jpeg.sln /upgrade' % vcvars_command)
             except:
                 pass
             # run build
