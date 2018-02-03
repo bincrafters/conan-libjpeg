@@ -51,8 +51,8 @@ class LibjpegConan(ConanFile):
                     except:
                         pass
                     # run build
-                    cmd = tools.build_sln_command(self.settings, "jpeg.sln", upgrade_project=False, build_type='Release', arch="x86").\
-                            replace('Platform="x86"', 'Platform="Win32"')
+                    cmd = tools.build_sln_command(self.settings, "jpeg.sln", upgrade_project=False, build_type='Release',
+                                                  arch="x86").replace('x86', 'Win32')
                     self.run('%s && %s' % (vcvars_command, cmd))
 
     def build_configure(self):
