@@ -18,7 +18,6 @@ class LibjpegConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
     source_subfolder = "source_subfolder"
-    install = "libjpeg-install"
 
     def configure(self):
         del self.settings.compiler.libcxx
@@ -50,7 +49,7 @@ class LibjpegConan(ConanFile):
             config_args.extend(["--enable-shared=yes", "--enable-static=no"])
         else:
             config_args.extend(["--enable-shared=no", "--enable-static=yes"])
-        prefix = os.path.abspath(self.install)
+        prefix = os.path.abspath(self.package_folder)
         if self.settings.os == 'Windows':
             prefix = tools.unix_path(prefix)
         config_args.append("--prefix=%s" % prefix)
@@ -80,12 +79,9 @@ class LibjpegConan(ConanFile):
             for filename in ['jpeglib.h', 'jerror.h', 'jconfig.h', 'jmorecfg.h']:
                 self.copy(pattern=filename, dst="include", src=self.source_subfolder, keep_path=False)
             self.copy(pattern="*.lib", dst="lib", src=self.source_subfolder, keep_path=False)
-        else:
-            self.copy("*.h", dst="include", src=os.path.join(self.install, "include"), keep_path=True)
-            self.copy(pattern="*.so*", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
-            self.copy(pattern="*.dylib*", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
-            self.copy(pattern="*.a", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
-            self.copy(pattern="*.dll", dst="bin", src=os.path.join(self.install, "bin"), keep_path=False)
+        shutil.rmtree(os.path.join(self.package_folder, 'share'), ignore_errors=True)
+        # can safely drop bin/ because there are no shared builds
+        shutil.rmtree(os.path.join(self.package_folder, 'bin'), ignore_errors=True)
 
     def package_info(self):
         if self.settings.compiler == "Visual Studio":
