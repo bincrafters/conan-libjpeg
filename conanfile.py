@@ -13,7 +13,6 @@ class libjpegConan(ConanFile):
     url = "http://github.com/bincrafters/conan-libjpeg"
     license = "BSD"
     exports = ["LICENSE.md"]
-    exports_sources = ['Win32.Mak']
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
     default_options = "shared=False"
@@ -35,14 +34,14 @@ class libjpegConan(ConanFile):
         else:
             tools.get("http://ijg.org/files/jpegsrc.v%s.tar.gz" % self.version)
         os.rename("jpeg-" + self.version, self.source_subfolder)
-        if self.settings.compiler == 'Visual Studio':
-            shutil.copy('Win32.Mak', os.path.join(self.source_subfolder, 'Win32.Mak'))
-            shutil.copy(os.path.join(self.source_subfolder, 'jconfig.vc'), os.path.join(self.source_subfolder, 'jconfig.h'))
 
-    def build_nmake(self):
+    def build_vs(self):
         with tools.chdir(self.source_subfolder):
+            tools.replace_in_file("makefile.vc", "!include <win32.mak>", "")
             vcvars_command = tools.vcvars_command(self.settings)
-            self.run('%s && nmake -f makefile.vc' % vcvars_command)
+            self.run('%s && nmake -f makefile.vc setup-v10' % vcvars_command)
+            cmd = tools.build_sln_command(self.settings, "jpeg.sln", build_type='Release', arch="x86").replace('Platform="x86"', 'Platform="Win32"')
+            self.run('%s && %s' % (vcvars_command, cmd))
 
     def build_configure(self):
         # works for unix and mingw environments
@@ -73,16 +72,15 @@ class libjpegConan(ConanFile):
 
     def build(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
-            self.build_nmake()
+            self.build_vs()
         else:
             self.build_configure()
 
     def package(self):
         self.copy("README", src=self.source_subfolder, dst="licenses", ignore_case=True, keep_path=False)
         if self.settings.compiler == "Visual Studio":
-            self.copy(pattern="libjpeg.lib", dst="lib", src=self.source_subfolder, keep_path=False)
-            for filename in ['jpeglib.h', 'jerror.h', 'jconfig.h', 'jmorecfg.h']:
-                self.copy(pattern=filename, dst="include", src=self.source_subfolder)
+            self.copy("*.h", dst="include", src=self.source_subfolder, keep_path=True)
+            self.copy(pattern="*.lib", dst="lib", src=self.source_subfolder, keep_path=False)
         else:
             self.copy("*.h", dst="include", src=os.path.join(self.install, "include"), keep_path=True)
             self.copy(pattern="*.so*", dst="lib", src=os.path.join(self.install, "lib"), keep_path=False)
@@ -91,7 +89,4 @@ class libjpegConan(ConanFile):
             self.copy(pattern="*.dll", dst="bin", src=os.path.join(self.install, "bin"), keep_path=False)
 
     def package_info(self):
-        if self.settings.compiler == "Visual Studio":
-            self.cpp_info.libs = ['libjpeg']
-        else:
-            self.cpp_info.libs = ['jpeg']
+        self.cpp_info.libs = ['jpeg']
