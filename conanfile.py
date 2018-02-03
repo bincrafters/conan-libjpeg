@@ -40,7 +40,14 @@ class libjpegConan(ConanFile):
             tools.replace_in_file("makefile.vc", "!include <win32.mak>", "")
             vcvars_command = tools.vcvars_command(self.settings)
             self.run('%s && nmake -f makefile.vc setup-v10' % vcvars_command)
-            cmd = tools.build_sln_command(self.settings, "jpeg.sln", build_type='Release', arch="x86").replace('Platform="x86"', 'Platform="Win32"')
+            # sometimes upgrading from 2010 to 2012 project fails with non-error exit code
+            try:
+                self.run('%s && devenv jpeg.sln /upgrade' % (vcvars_command, cmd))
+            except:
+                pass
+            # run build
+            cmd = tools.build_sln_command(self.settings, "jpeg.sln", upgrade_project=False, build_type='Release', arch="x86").\
+                    replace('Platform="x86"', 'Platform="Win32"')
             self.run('%s && %s' % (vcvars_command, cmd))
 
     def build_configure(self):
