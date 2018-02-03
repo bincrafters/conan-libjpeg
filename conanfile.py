@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-from conans import ConanFile, AutoToolsBuildEnvironment, VisualStudioBuildEnvironment, tools
+import shutil
+from conans import ConanFile, AutoToolsBuildEnvironment, tools
 
 
 class LibjpegConan(ConanFile):
@@ -12,6 +13,7 @@ class LibjpegConan(ConanFile):
     url = "http://github.com/bincrafters/conan-libjpeg"
     license = "BSD"
     exports = ["LICENSE.md"]
+    exports_sources = [ "Win32.Mak" ]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
     default_options = "shared=False"
@@ -27,33 +29,17 @@ class LibjpegConan(ConanFile):
             self.build_requires("msys2_installer/latest@bincrafters/stable")
 
     def source(self):
-        # file name examples:  linux jpegsrc.v9b.tar.gz,  windows jpegsr9b.zip
-        if self.settings.os == "Windows":
-            tools.get("http://ijg.org/files/jpegsr%s.zip" % self.version)
-        else:
-            tools.get("http://ijg.org/files/jpegsrc.v%s.tar.gz" % self.version)
+        tools.get("http://ijg.org/files/jpegsrc.v%s.tar.gz" % self.version)
         os.rename("jpeg-" + self.version, self.source_subfolder)
 
-    def build_vs(self):
+    def build_nmake(self):
+        if self.settings.compiler == 'Visual Studio':
+            shutil.copy('Win32.Mak', os.path.join(self.source_subfolder, 'Win32.Mak'))
         with tools.chdir(self.source_subfolder):
-            env_build = VisualStudioBuildEnvironment(self)
-            with tools.environment_append(env_build.vars):
-                # runtime must be appended to the end of cl call (using _CL_ variable instead of CL).
-                # cl.exe defaults to the /MD BEFORE even looking to CL env variable set by VisualStudioBuildEnvironment
-                # So the non-MD switch is overriden with /MD. Can be detected by the D9025 warning
-                with tools.environment_append({"_CL_": "/" + env_build.runtime}):
-                    tools.replace_in_file("makefile.vc", "!include <win32.mak>", "")
-                    vcvars_command = tools.vcvars_command(self.settings)
-                    self.run('%s && nmake -f makefile.vc setup-v10' % vcvars_command)
-                    # sometimes upgrading from 2010 to 2012 project fails with non-error exit code
-                    try:
-                        self.run('%s && devenv jpeg.sln /upgrade' % vcvars_command)
-                    except:
-                        pass
-                    # run build
-                    cmd = tools.build_sln_command(self.settings, "jpeg.sln", upgrade_project=False, build_type='Release',
-                                                  arch="x86").replace('x86', 'Win32')
-                    self.run('%s && %s' % (vcvars_command, cmd))
+            shutil.copy('jconfig.vc', 'jconfig.h')
+            vcvars_command = tools.vcvars_command(self.settings)
+            params = "nodebug=1" if self.settings.build_type == 'Release' else ""
+            self.run('%s && nmake -f makefile.vc %s' % (vcvars_command, params))
 
     def build_configure(self):
         # works for unix and mingw environments
@@ -83,15 +69,16 @@ class LibjpegConan(ConanFile):
         env_build.make(args=["install"])
 
     def build(self):
-        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
-            self.build_vs()
+        if self.settings.compiler == "Visual Studio":
+            self.build_nmake()
         else:
             self.build_configure()
 
     def package(self):
         self.copy("README", src=self.source_subfolder, dst="licenses", ignore_case=True, keep_path=False)
         if self.settings.compiler == "Visual Studio":
-            self.copy("*.h", dst="include", src=self.source_subfolder, keep_path=True)
+            for filename in ['jpeglib.h', 'jerror.h', 'jconfig.h', 'jmorecfg.h']:
+                self.copy(pattern=filename, dst="include", src=self.source_subfolder, keep_path=False)
             self.copy(pattern="*.lib", dst="lib", src=self.source_subfolder, keep_path=False)
         else:
             self.copy("*.h", dst="include", src=os.path.join(self.install, "include"), keep_path=True)
@@ -101,4 +88,7 @@ class LibjpegConan(ConanFile):
             self.copy(pattern="*.dll", dst="bin", src=os.path.join(self.install, "bin"), keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ['jpeg']
+        if self.settings.compiler == "Visual Studio":
+            self.cpp_info.libs = ['libjpeg']
+        else:
+            self.cpp_info.libs = ['jpeg']
