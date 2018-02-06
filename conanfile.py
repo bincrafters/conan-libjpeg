@@ -41,7 +41,7 @@ class LibjpegConan(ConanFile):
             else:
                 tools.replace_in_file('makefile.vc', '(cvars)', '(cvarsmt)')
                 tools.replace_in_file('makefile.vc', '(conlibs)', '(conlibsmt)')
-            self.run('%s && nmake -f makefile.vc %s' % (vcvars_command, params))
+            self.run('%s && nmake -f makefile.vc %s libjpeg.lib' % (vcvars_command, params))
 
     def build_configure(self):
         # works for unix and mingw environments
