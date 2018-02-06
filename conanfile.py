@@ -33,6 +33,14 @@ class LibjpegConan(ConanFile):
             shutil.copy('jconfig.vc', 'jconfig.h')
             vcvars_command = tools.vcvars_command(self.settings)
             params = "nodebug=1" if self.settings.build_type == 'Release' else ""
+            # set flags directly in makefile.vc
+            # cflags are critical for the library. ldflags and ldlibs are only for binaries
+            if self.settings.compiler.runtime in ["MD", "MDd"]:
+                tools.replace_in_file('makefile.vc', '(cvars)', '(cvarsdll)')
+                tools.replace_in_file('makefile.vc', '(conlibs)', '(conlibsdll)')
+            else:
+                tools.replace_in_file('makefile.vc', '(cvars)', '(cvarsmt)')
+                tools.replace_in_file('makefile.vc', '(conlibs)', '(conlibsmt)')
             self.run('%s && nmake -f makefile.vc %s' % (vcvars_command, params))
 
     def build_configure(self):
