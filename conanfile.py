@@ -22,11 +22,6 @@ class LibjpegConan(ConanFile):
     def configure(self):
         del self.settings.compiler.libcxx
 
-    def build_requirements(self):
-        if self.settings.os == "Windows" and self.settings.compiler != "Visual Studio":
-            self.build_requires("mingw_installer/1.0@conan/stable")
-            self.build_requires("msys2_installer/latest@bincrafters/stable")
-
     def source(self):
         tools.get("http://ijg.org/files/jpegsrc.v%s.tar.gz" % self.version)
         os.rename("jpeg-" + self.version, self.source_subfolder)
