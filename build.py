@@ -20,7 +20,7 @@ if __name__ == "__main__":
                 new_build_requires["*"] = new_build_requires.get("*", []) + \
                     ["mingw_installer/1.0@conan/stable",
                      "msys2_installer/latest@bincrafters/stable"]
-                items.append([item.settings, new_options, item.env_vars,
+                items.append([item.settings, item.options, item.env_vars,
                               new_build_requires, item.reference])
             else:
                 # or just add build
