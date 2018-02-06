@@ -16,7 +16,7 @@ if __name__ == "__main__":
                 item.settings["arch"] == "x86"):
             new_build_requires = copy.copy(item.build_requires)
             # add msys2 and mingw as a build requirement for mingw builds
-            if platform.system() == "Windows" and settings["compiler"] == "gcc":
+            if platform.system() == "Windows" and item.settings["compiler"] == "gcc":
                 new_build_requires["*"] = new_build_requires.get("*", []) + \
                     ["mingw_installer/1.0@conan/stable",
                      "msys2_installer/latest@bincrafters/stable"]
