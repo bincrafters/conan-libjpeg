@@ -1,7 +1,7 @@
 ## Package Status
 
-| Bintray | Windows | Linux and Macos |
-|---------|--------|------|
+| Bintray | Windows | Linux & macOS |
+|:--------:|:---------:|:-----------------:|
 |[![Download](https://api.bintray.com/packages/bincrafters/public-conan/libjpeg%3Abincrafters/images/download.svg)](https://bintray.com/bincrafters/public-conan/libjpeg%3Abincrafters/_latestVersion)|
 [![Build status](https://ci.appveyor.com/api/projects/status/github/bincrafters/conan-libjpeg?svg=true)](https://ci.appveyor.com/project/BinCrafters/conan-libjpeg)|[![Build Status](https://travis-ci.org/bincrafters/conan-libjpeg.svg)](https://travis-ci.org/bincrafters/conan-libjpeg)|
 
@@ -40,9 +40,7 @@ The contents of this GIT repository are completely separate from the software be
     ~/.conan/data/<pkg_name>/<pkg_version>/bincrafters/package/<random_package_id>/license/<LICENSE_FILES_HERE>
 
 *Note :   The most common filenames for OSS licenses are `LICENSE` AND `COPYING` without file extensions.*
-	
+
 ### License for Bincrafters recipe:
 
     ~/.conan/data/<pkg_name>/<pkg_version>/bincrafters/export/LICENSE.md
-
-	
