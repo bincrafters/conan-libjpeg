@@ -14,7 +14,7 @@ class LibjpegConan(ConanFile):
     license = "http://ijg.org/files/README"
     homepage = "http://ijg.org"
     exports = ["LICENSE.md"]
-    exports_sources = [ "Win32.Mak" ]
+    exports_sources = ["Win32.Mak"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False]}
     default_options = "shared=False"
