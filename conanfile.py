@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import platform
 import shutil
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
 
@@ -46,7 +47,8 @@ class LibjpegConan(ConanFile):
 
     def build_configure(self):
         # works for unix and mingw environments
-        env_build = AutoToolsBuildEnvironment(self, win_bash=self.settings.os == 'Windows')
+        useWinBash = self.settings.os == 'Windows' and platform.system() == "Windows"
+        env_build = AutoToolsBuildEnvironment(self, win_bash=useWinBash)
         env_build.fpic = True
         config_args = []
         if self.options.shared:
@@ -58,15 +60,14 @@ class LibjpegConan(ConanFile):
             prefix = tools.unix_path(prefix)
         config_args.append("--prefix=%s" % prefix)
 
-        # mingw-specific
-        if self.settings.os == 'Windows':
+        # mingw-specific (do not do this when cross building)
+        if self.settings.os == 'Windows' and platform.system() == "Windows":
             if self.settings.arch == "x86_64":
                 config_args.append('--build=x86_64-w64-mingw32')
                 config_args.append('--host=x86_64-w64-mingw32')
             if self.settings.arch == "x86":
                 config_args.append('--build=i686-w64-mingw32')
                 config_args.append('--host=i686-w64-mingw32')
-
         env_build.configure(configure_dir=self.source_subfolder, args=config_args)
         env_build.make()
         env_build.make(args=["install"])
