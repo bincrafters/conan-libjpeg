@@ -45,7 +45,6 @@ class LibjpegConan(ConanFile):
             self.run('%s && nmake -f makefile.vc %s libjpeg.lib' % (vcvars_command, params))
 
     def build_configure(self):
-        # works for unix and mingw environments
         env_build = AutoToolsBuildEnvironment(self, win_bash=self.settings.os == 'Windows')
         env_build.fpic = True
         config_args = []
@@ -57,15 +56,6 @@ class LibjpegConan(ConanFile):
         if self.settings.os == 'Windows':
             prefix = tools.unix_path(prefix)
         config_args.append("--prefix=%s" % prefix)
-
-        # mingw-specific
-        if self.settings.os == 'Windows':
-            if self.settings.arch == "x86_64":
-                config_args.append('--build=x86_64-w64-mingw32')
-                config_args.append('--host=x86_64-w64-mingw32')
-            if self.settings.arch == "x86":
-                config_args.append('--build=i686-w64-mingw32')
-                config_args.append('--host=i686-w64-mingw32')
 
         env_build.configure(configure_dir=self.source_subfolder, args=config_args)
         env_build.make()
