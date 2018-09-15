@@ -11,6 +11,7 @@ class LibjpegConan(ConanFile):
     version = "9c"
     description = "Libjpeg is a widely used C library for reading and writing JPEG image files."
     url = "http://github.com/bincrafters/conan-libjpeg"
+    author = "Bincrafters <bincrafters@gmail.com>"
     license = "http://ijg.org/files/README"
     homepage = "http://ijg.org"
     exports = ["LICENSE.md"]
