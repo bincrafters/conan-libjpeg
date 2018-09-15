@@ -3,6 +3,7 @@
 
 import os
 import shutil
+import platform
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
 
 
@@ -46,7 +47,8 @@ class LibjpegConan(ConanFile):
             self.run('%s && nmake -f makefile.vc %s libjpeg.lib' % (vcvars_command, params))
 
     def build_configure(self):
-        env_build = AutoToolsBuildEnvironment(self, win_bash=self.settings.os == 'Windows')
+        env_build = AutoToolsBuildEnvironment(self, win_bash=self.settings.os == 'Windows' and
+                                              platform.system() == 'Windows')
         env_build.fpic = True
         config_args = []
         if self.options.shared:
