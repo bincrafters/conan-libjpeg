@@ -19,7 +19,7 @@ class LibjpegConan(ConanFile):
     exports_sources = ["Win32.Mak"]
     settings = "os", "arch", "compiler", "build_type"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = {"shared": True, "fPIC": True}
+    default_options = {"shared": False, "fPIC": True}
     _source_subfolder = "source_subfolder"
 
     def config_options(self):
