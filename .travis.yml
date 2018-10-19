@@ -43,7 +43,7 @@ matrix:
         env: CONAN_APPLE_CLANG_VERSIONS=9.1
       - <<: *osx
         osx_image: xcode10
-        env: CONAN_APPLE_CLANG_VERSIONS=10
+        env: CONAN_APPLE_CLANG_VERSIONS=10.0
 
 
 install:
