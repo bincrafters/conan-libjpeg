@@ -18,21 +18,25 @@ class LibjpegConan(ConanFile):
     exports = ["LICENSE.md"]
     exports_sources = ["Win32.Mak"]
     settings = "os", "arch", "compiler", "build_type"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
-    source_subfolder = "source_subfolder"
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = {"shared": True, "fPIC": True}
+    _source_subfolder = "source_subfolder"
+
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
 
     def configure(self):
         del self.settings.compiler.libcxx
 
     def source(self):
         tools.get("http://ijg.org/files/jpegsrc.v%s.tar.gz" % self.version)
-        os.rename("jpeg-" + self.version, self.source_subfolder)
+        os.rename("jpeg-" + self.version, self._source_subfolder)
 
-    def build_nmake(self):
+    def _build_nmake(self):
         if self.settings.compiler == 'Visual Studio':
-            shutil.copy('Win32.Mak', os.path.join(self.source_subfolder, 'Win32.Mak'))
-        with tools.chdir(self.source_subfolder):
+            shutil.copy('Win32.Mak', os.path.join(self._source_subfolder, 'Win32.Mak'))
+        with tools.chdir(self._source_subfolder):
             shutil.copy('jconfig.vc', 'jconfig.h')
             vcvars_command = tools.vcvars_command(self.settings)
             params = "nodebug=1" if self.settings.build_type == 'Release' else ""
@@ -46,7 +50,7 @@ class LibjpegConan(ConanFile):
                 tools.replace_in_file('makefile.vc', '(conlibs)', '(conlibsmt)')
             self.run('%s && nmake -f makefile.vc %s libjpeg.lib' % (vcvars_command, params))
 
-    def build_configure(self):
+    def _build_configure(self):
         env_build = AutoToolsBuildEnvironment(self, win_bash=self.settings.os == 'Windows' and
                                               platform.system() == 'Windows')
         env_build.fpic = True
@@ -60,22 +64,22 @@ class LibjpegConan(ConanFile):
             prefix = tools.unix_path(prefix)
         config_args.append("--prefix=%s" % prefix)
 
-        env_build.configure(configure_dir=self.source_subfolder, args=config_args)
+        env_build.configure(configure_dir=self._source_subfolder, args=config_args)
         env_build.make()
-        env_build.make(args=["install"])
+        env_build.install()
 
     def build(self):
         if self.settings.compiler == "Visual Studio":
-            self.build_nmake()
+            self._build_nmake()
         else:
-            self.build_configure()
+            self._build_configure()
 
     def package(self):
-        self.copy("README", src=self.source_subfolder, dst="licenses", ignore_case=True, keep_path=False)
+        self.copy("README", src=self._source_subfolder, dst="licenses", ignore_case=True, keep_path=False)
         if self.settings.compiler == "Visual Studio":
             for filename in ['jpeglib.h', 'jerror.h', 'jconfig.h', 'jmorecfg.h']:
-                self.copy(pattern=filename, dst="include", src=self.source_subfolder, keep_path=False)
-            self.copy(pattern="*.lib", dst="lib", src=self.source_subfolder, keep_path=False)
+                self.copy(pattern=filename, dst="include", src=self._source_subfolder, keep_path=False)
+            self.copy(pattern="*.lib", dst="lib", src=self._source_subfolder, keep_path=False)
         shutil.rmtree(os.path.join(self.package_folder, 'share'), ignore_errors=True)
         # can safely drop bin/ because there are no shared builds
         shutil.rmtree(os.path.join(self.package_folder, 'bin'), ignore_errors=True)
