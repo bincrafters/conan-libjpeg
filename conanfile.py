@@ -15,6 +15,8 @@ class LibjpegConan(ConanFile):
     author = "Bincrafters <bincrafters@gmail.com>"
     license = "http://ijg.org/files/README"
     homepage = "http://ijg.org"
+    topics = ("conan", "libjpeg", "jpeg", "image-writer", "image-reader")
+    author = "Bincrafters <bincrafters@gmail.com>"
     exports = ["LICENSE.md"]
     exports_sources = ["Win32.Mak"]
     settings = "os", "arch", "compiler", "build_type"
@@ -30,7 +32,8 @@ class LibjpegConan(ConanFile):
         del self.settings.compiler.libcxx
 
     def source(self):
-        tools.get("http://ijg.org/files/jpegsrc.v%s.tar.gz" % self.version)
+        sha256 = "650250979303a649e21f87b5ccd02672af1ea6954b911342ea491f351ceb7122"
+        tools.get("{}/files/jpegsrc.v{}.tar.gz".format(self.homepage, self.version), sha256=sha256)
         os.rename("jpeg-" + self.version, self._source_subfolder)
 
     def _build_nmake(self):
@@ -51,9 +54,8 @@ class LibjpegConan(ConanFile):
             self.run('%s && nmake -f makefile.vc %s libjpeg.lib' % (vcvars_command, params))
 
     def _build_configure(self):
-        env_build = AutoToolsBuildEnvironment(self, win_bash=self.settings.os == 'Windows' and
-                                              platform.system() == 'Windows')
-        env_build.fpic = True
+        # works for unix and mingw environments
+        env_build = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
         config_args = []
         if self.options.shared:
             config_args.extend(["--enable-shared=yes", "--enable-static=no"])
@@ -63,6 +65,15 @@ class LibjpegConan(ConanFile):
         if self.settings.os == 'Windows':
             prefix = tools.unix_path(prefix)
         config_args.append("--prefix=%s" % prefix)
+
+        # mingw-specific
+        if self.settings.os == 'Windows':
+            if self.settings.arch == "x86_64":
+                config_args.append('--build=x86_64-w64-mingw32')
+                config_args.append('--host=x86_64-w64-mingw32')
+            if self.settings.arch == "x86":
+                config_args.append('--build=i686-w64-mingw32')
+                config_args.append('--host=i686-w64-mingw32')
 
         env_build.configure(configure_dir=self._source_subfolder, args=config_args)
         env_build.make()
