@@ -1,14 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -e
-set -x
+set -ex
 
 if [[ "$(uname -s)" == 'Darwin' ]]; then
     brew update || brew update
     brew outdated pyenv || brew upgrade pyenv
     brew install pyenv-virtualenv
     brew install cmake || true
-    brew install nasm || true
 
     if which pyenv > /dev/null; then
         eval "$(pyenv init -)"
@@ -18,9 +16,6 @@ if [[ "$(uname -s)" == 'Darwin' ]]; then
     pyenv virtualenv 3.7.1 conan
     pyenv rehash
     pyenv activate conan
-else
-    sudo apt-get update
-    sudo apt-get install -y --no-install-recommends nasm autoconf dh-autoreconf
 fi
 
 pip install conan --upgrade

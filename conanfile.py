@@ -3,7 +3,6 @@
 
 import os
 import shutil
-import platform
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
 
 
