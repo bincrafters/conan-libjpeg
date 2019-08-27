@@ -29,6 +29,7 @@ class LibjpegConan(ConanFile):
 
     def configure(self):
         del self.settings.compiler.libcxx
+        del self.settings.compiler.cppstd
 
     def source(self):
         sha256 = "650250979303a649e21f87b5ccd02672af1ea6954b911342ea491f351ceb7122"
