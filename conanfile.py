@@ -31,6 +31,11 @@ class LibjpegConan(ConanFile):
         del self.settings.compiler.libcxx
         del self.settings.compiler.cppstd
 
+    def build_requirements(self):
+        if tools.os_info.is_windows:
+            if "CONAN_BASH_PATH" not in os.environ:
+                self.build_requires("msys2_installer/latest@bincrafters/stable")
+
     def source(self):
         sha256 = "650250979303a649e21f87b5ccd02672af1ea6954b911342ea491f351ceb7122"
         tools.get("{}/files/jpegsrc.v{}.tar.gz".format(self.homepage, self.version), sha256=sha256)
